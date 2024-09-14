@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Comparison Tool</title>
+  <style>
+    body {
+      background-color: #fffae3;
+      color: #60a3be;
+      font-family: Arial, sans-serif;
+    }
+
+    select {
+      background-color: #60a3be;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #charts-container {
+      margin-top: 20px;
+    }
+
+    #chart-gbp, #chart-sats {
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+  <h1>Price Comparison Tool</h1>
+
+  <label for="product-select">Choose a product:</label>
+  <select id="product-select">
+    <!-- Options will be dynamically populated -->
+  </select>
+
+  <div id="charts-container">
+    <div id="chart-gbp"></div>
+    <div id="chart-sats"></div>
+  </div>
+
+  <script>
+    // Your product data and Bitcoin prices (example structure)
+    const products = [ /* Add your product data here */ ];
+    const bitcoinPrices = { /* Add your bitcoin price data here */ };
+
+    const selectMenu = document.getElementById("product-select");
+    const chartContainerGBP = document.getElementById("chart-gbp");
+    const chartContainerSATS = document.getElementById("chart-sats");
+
+    // Populate the dropdown menu with products
+    products.forEach(product => {
+      const option = document.createElement("option");
+      option.value = product.name;
+      option.textContent = product.name;
+      selectMenu.appendChild(option);
+    });
+
+    // Handle product selection
+    selectMenu.addEventListener("change", (event) => {
+      const selectedProduct = products.find(product => product.name === event.target.value);
+      const years = Object.keys(selectedProduct.prices_gbp);
+      const pricesGBP = Object.values(selectedProduct.prices_gbp);
+
+      // Convert GBP to SATS
+      const pricesSATS = pricesGBP.map((price, index) => {
+        const year = years[index];
+        return (price / bitcoinPrices[year]) * 100_000_000;
+      });
+
+      // Plot GBP chart
+      Plotly.newPlot(chartContainerGBP, [{
+        x: years,
+        y: pricesGBP,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'GBP'
+      }], {
+        title: `${selectedProduct.name} Price in GBP`,
+        paper_bgcolor: '#fffae3',
+        plot_bgcolor: '#fffae3',
+        font: { color: '#60a3be' }
+      });
+
+      // Plot SATS chart
+      Plotly.newPlot(chartContainerSATS, [{
+        x: years,
+        y: pricesSATS,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'SATS'
+      }], {
+        title: `${selectedProduct.name} Price in SATS`,
+        paper_bgcolor: '#fffae3',
+        plot_bgcolor: '#fffae3',
+        font: { color: '#60a3be' }
+      });
+    });
+  </script>
+
+</body>
+</html>
